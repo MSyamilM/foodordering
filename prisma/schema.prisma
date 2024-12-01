@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Menu {
+  idMenu      Int      @id @default(autoincrement())
+  uuid        String   @unique @default("")
+  name        String   @default("")
+  price       Int      @default(0)
+  category    Category @default(FOOD)
+  picture     String   @default("")
+  description String   @default("") @db.Text
+
+  OrderList OrderList[]
+}
+
+enum Category {
+  FOOD
+  DRINK
+  SNACK
+}
+
+model User {
+  idUser          Int    @id @default(autoincrement())
+  uuid            String @unique @default("")
+  name            String @default("")
+  email           String @unique @default("")
+  password        String @default("")
+  picture String @default("")
+  role            Role   @default(CASHIER)
+
+  Order Order[]
+}
+
+enum Role {
+  MANAGER
+  CASHIER
+}
+
+model Order {
+  idOrder        Int    @id @default(autoincrement())
+  uuid           String @unique @default("")
+  customer       String @default("")
+  table_number   String @default("")
+  total_price    Int    @default(0)
+  payment_method Method @default(CASH)
+  status         Status @default(NEW)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user           User?  @relation(fields: [idUser], references: [idUser])
+  idUser         Int?
+
+  OrderList OrderList[]
+}
+
+enum Method {
+  CASH
+  QRIS
+}
+
+enum Status {
+  NEW
+  PAID
+  DONE
+}
+
+model OrderList {
+  idOrderList Int      @id @default(autoincrement())
+  uuid        String   @unique @default("")
+  quantity    Int      @default(0)
+  note        String   @default("") @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  order       Order?   @relation(fields: [idOrder], references: [idOrder])
+  idOrder     Int?
+  menu        Menu?    @relation(fields: [idMenu], references: [idMenu])
+  idMenu      Int?
+}
